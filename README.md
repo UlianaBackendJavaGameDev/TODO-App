@@ -27,4 +27,4 @@
 
 1. Склонируйте репозиторий:
    ```bash
-   git clone https://github.com/твой_ник/todo-app.git
+   git clone https://github.com/UlianaBackendJavaGameDev/TODO-App
