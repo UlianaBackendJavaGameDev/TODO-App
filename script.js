@@ -4,51 +4,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskList = document.getElementById('taskList');
     const counter = document.getElementById('counter');
     const filterBtns = document.querySelectorAll('.filter-btn');
+    const clearBtn = document.getElementById('clearCompletedBtn');
 
-    // Загружаем задачи из localStorage
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    let currentFilter = 'all'; // Текущий фильтр
+    let currentFilter = 'all';
 
-    // Функция для форматирования даты
     function formatDate(isoString) {
         const date = new Date(isoString);
         return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
     }
 
-    // Функция для обновления счетчика
     function updateCounter() {
         const total = tasks.length;
         const completed = tasks.filter(t => t.completed).length;
         counter.textContent = `Выполнено: ${completed} из ${total}`;
     }
 
-    // Функция для рендера задач с учетом фильтра
     function renderTasks() {
         taskList.innerHTML = '';
 
-        // Фильтруем задачи
         const filteredTasks = tasks.filter(task => {
             if (currentFilter === 'active') return !task.completed;
             if (currentFilter === 'completed') return task.completed;
-            return true; // 'all'
+            return true;
         });
 
         filteredTasks.forEach((task) => {
-            const originalIndex = tasks.indexOf(task); // Индекс в оригинальном массиве
-
             const li = document.createElement('li');
             if (task.completed) li.classList.add('completed');
 
             const contentDiv = document.createElement('div');
             contentDiv.style.flex = '1';
+            contentDiv.style.display = 'flex';
+            contentDiv.style.justifyContent = 'space-between';
+            contentDiv.style.alignItems = 'center';
 
             const span = document.createElement('span');
             span.textContent = task.text;
-            span.addEventListener('click', () => toggleTask(originalIndex));
-
+            span.addEventListener('click', () => toggleTask(task.id)); 
+            span.addEventListener('dblclick', () => editTask(task.id));
+            
             const dateSpan = document.createElement('span');
             dateSpan.classList.add('task-date');
-            // Если даты нет (старые задачи), не показываем
             if (task.date) {
                 dateSpan.textContent = `📅 ${formatDate(task.date)}`;
             }
@@ -59,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const deleteBtn = document.createElement('button');
             deleteBtn.textContent = '✕';
             deleteBtn.classList.add('delete-btn');
-            deleteBtn.addEventListener('click', () => deleteTask(originalIndex));
+            deleteBtn.addEventListener('click', () => deleteTask(task.id));
 
             li.appendChild(contentDiv);
             li.appendChild(deleteBtn);
@@ -74,21 +71,41 @@ document.addEventListener('DOMContentLoaded', () => {
         if (text === '') return;
 
         tasks.push({
+            id: Date.now(),
             text,
             completed: false,
-            date: new Date().toISOString() // Сохраняем дату
+            date: new Date().toISOString()
         });
         taskInput.value = '';
         saveAndRender();
     }
 
-    function toggleTask(index) {
-        tasks[index].completed = !tasks[index].completed;
+    function toggleTask(id) {
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+            task.completed = !task.completed;
+            saveAndRender();
+        }
+    }
+
+    function editTask(id) {
+        const task = tasks.find(t => t.id === id);
+        if (task) {
+            const newText = prompt('Редактировать задачу:', task.text);
+            if (newText !== null && newText.trim() !== '') {
+                task.text = newText.trim();
+                saveAndRender();
+            }
+        }
+    }
+
+    function deleteTask(id) {
+        tasks = tasks.filter(t => t.id !== id);
         saveAndRender();
     }
 
-    function deleteTask(index) {
-        tasks.splice(index, 1);
+    function clearCompleted() {
+        tasks = tasks.filter(t => !t.completed);
         saveAndRender();
     }
 
@@ -97,24 +114,21 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTasks();
     }
 
-    // Обработчики событий
     addBtn.addEventListener('click', addTask);
     taskInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') addTask();
     });
 
-    // Обработчик фильтров
     filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Убираем active у всех
             filterBtns.forEach(b => b.classList.remove('active'));
-            // Добавляем active текущей
             btn.classList.add('active');
-            
             currentFilter = btn.dataset.filter;
-            renderTasks(); // Перерисовываем
+            renderTasks();
         });
     });
+
+    clearBtn.addEventListener('click', clearCompleted);
 
     // Первый рендер
     renderTasks();

@@ -45,7 +45,7 @@ input{
     color: #fff;
     outline: none;
 }
-input::focus{
+input:focus{
     border-color: #4ec9b0;
 }
 button{
@@ -74,10 +74,13 @@ li{
     transition: all 0.3s;
     border-left: 4px solid #4ec9b0;
 }
-li.complited{
-    text-decoration: line-through;
+li.completed {
     opacity: 0.5;
     border-left-color: #888;
+}
+
+li.completed div span:first-child {
+    text-decoration: line-through;
 }
 li span{
     cursor: pointer;
@@ -139,7 +142,21 @@ li span{
     border-top: 1px solid #333;
     padding-top: 15px;
 }
-
+.clear-btn{
+    background: transparent;
+    color: #ff5f56;
+    border: 1px solid #ff5f56;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: all 0.3s;
+}
+.clear-btn:hover{
+        background: #ff5f56;
+    color: #121212;
+}
 /* Адаптив для фильтров на мобилке */
 @media (max-width: 480px) {
     .filters {
