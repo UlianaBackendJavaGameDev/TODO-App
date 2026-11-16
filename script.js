@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const counter = document.getElementById('counter');
     const filterBtns = document.querySelectorAll('.filter-btn');
     const clearBtn = document.getElementById('clearCompletedBtn');
+    // Добавляем поиск кнопок тем
+    const themeButtons = document.querySelectorAll('.theme-btn'); 
 
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
     let currentFilter = 'all';
@@ -113,6 +115,26 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('tasks', JSON.stringify(tasks));
         renderTasks();
     }
+
+    // --- ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ТЕМ ---
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        
+        // Подсвечиваем активную кнопку темы
+        themeButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.themeValue === theme);
+        });
+    }
+
+    themeButtons.forEach(btn => {
+        btn.addEventListener('click', () => applyTheme(btn.dataset.themeValue));
+    });
+
+    // Восстанавливаем тему при загрузке (по умолчанию 'dark', так как у вас сейчас тёмная)
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    applyTheme(savedTheme);
+    // --------------------------------
 
     addBtn.addEventListener('click', addTask);
     taskInput.addEventListener('keypress', (e) => {

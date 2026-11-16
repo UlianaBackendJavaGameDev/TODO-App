@@ -10,8 +10,18 @@
 <body>
     
     <div class="container">
-        <h1>Мой фокус</h1>
+        <div class="app-header">
+            <div>
+                <h1>Мой фокус</h1>
         <p class="subtitle">Что нужно сделать сегодня?</p>
+            </div>
+            <div class="theme-switcher">
+                <button class="theme-btn" data-theme-value="light" title="Светлая">☀️</button>
+                <button class="theme-btn" data-theme-value="dark" title="Темная">🌙</button>
+                <button class="theme-btn" data-theme-value="horror" title="Хоррор">💀</button>
+            </div>
+        </div>
+        
 
 
         <div class="input-group">
@@ -21,8 +31,8 @@
         <!--filters-->
         <div class="filters">
             <button class="filter-btn active" data-filter="all">Все</button>
-            <button class="filter-btn"data-filter>Активные</button>
-            <button class="filter-btn"data-filter>Выполненные</button>
+            <button class="filter-btn"data-filter="active">Активные</button>
+            <button class="filter-btn"data-filter="completed">Выполненные</button>
         </div>
         <!--clearBtn-->
         <button id="clearCompletedBtn" class="clear-btn">Очистить выполненные</button>
