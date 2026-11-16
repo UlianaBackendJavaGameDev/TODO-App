@@ -4,7 +4,7 @@
 
 ## Демо
 
-Посмотреть проект вживую можно здесь: [ссылка на GitHub Pages]
+Посмотреть проект вживую можно здесь: https://ulianabackendjavagamedev.github.io/TODO-App/
 
 ## Функционал
 
