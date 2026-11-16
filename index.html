@@ -24,9 +24,27 @@
         
 
 
-        <div class="input-group">
-            <input type="text" id="taskInput" placeholder="Новая задача...">
+        <div class="input-group" style="flex-direction: column; gap: 10px;">
+            <div style="display: flex; gap: 10px;"><input type="text" id="taskInput" placeholder="Новая задача...">
             <button id="addBtn">Добавить</button>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="date" id="taskDeadline" title="Дедлайн">
+
+
+            <select  id="taskPriority">
+                <option value="low">Низкий приоритет</option>
+                <option value="medium" selected>Средний приоритет</option>
+                <option value="high" >Высокий приоритет</option>
+            </select>
+            <select id="taskCategory">
+                <option value="work">Работа</option>
+                <option value="study" selected>Учёба</option>
+                <option value="course" >Курс</option>
+                <option value="rest" >Отдых</option>
+            </select>
+        </div>
+            
         </div>
         <!--filters-->
         <div class="filters">

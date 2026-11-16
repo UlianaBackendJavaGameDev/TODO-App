@@ -5,13 +5,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const counter = document.getElementById('counter');
     const filterBtns = document.querySelectorAll('.filter-btn');
     const clearBtn = document.getElementById('clearCompletedBtn');
-    // Добавляем поиск кнопок тем
     const themeButtons = document.querySelectorAll('.theme-btn'); 
+    
+    // Новые элементы для дедлайна, приоритета и категории
+    const taskDeadline = document.getElementById('taskDeadline');
+    const taskPriority = document.getElementById('taskPriority');
+    const taskCategory = document.getElementById('taskCategory');
 
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
     let currentFilter = 'all';
 
     function formatDate(isoString) {
+        if (!isoString) return '';
         const date = new Date(isoString);
         return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
     }
@@ -25,12 +30,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderTasks() {
         taskList.innerHTML = '';
 
-        const filteredTasks = tasks.filter(task => {
+        // 1. Фильтрация
+        let filteredTasks = tasks.filter(task => {
             if (currentFilter === 'active') return !task.completed;
             if (currentFilter === 'completed') return task.completed;
             return true;
         });
 
+        // 2. Сортировка (сначала невыполненные, потом по приоритету: высокий -> низкий)
+        const priorityWeight = { high: 1, medium: 2, low: 3 };
+        filteredTasks.sort((a, b) => {
+            // Сначала те, что не выполнены
+            if (a.completed !== b.completed) return a.completed ? 1 : -1;
+            // Потом по приоритету
+            return (priorityWeight[a.priority] || 2) - (priorityWeight[b.priority] || 2);
+        });
+
+        // 3. Отрисовка
         filteredTasks.forEach((task) => {
             const li = document.createElement('li');
             if (task.completed) li.classList.add('completed');
@@ -38,23 +54,52 @@ document.addEventListener('DOMContentLoaded', () => {
             const contentDiv = document.createElement('div');
             contentDiv.style.flex = '1';
             contentDiv.style.display = 'flex';
-            contentDiv.style.justifyContent = 'space-between';
             contentDiv.style.alignItems = 'center';
+            contentDiv.style.flexWrap = 'wrap'; // Чтобы на мобилке бейджи переносились
 
+            // Текст задачи
             const span = document.createElement('span');
             span.textContent = task.text;
             span.addEventListener('click', () => toggleTask(task.id)); 
             span.addEventListener('dblclick', () => editTask(task.id));
-            
-            const dateSpan = document.createElement('span');
-            dateSpan.classList.add('task-date');
-            if (task.date) {
-                dateSpan.textContent = `📅 ${formatDate(task.date)}`;
+            contentDiv.appendChild(span);
+
+            // Бейджики (категория и приоритет)
+            const badgesDiv = document.createElement('div');
+            badgesDiv.classList.add('task-badges');
+
+            // Категория
+            const catBadge = document.createElement('span');
+            const catNames = { work: 'Работа', study: 'Учёба', course: 'Курс', rest: 'Отдых' };
+            catBadge.classList.add('badge', `badge--${task.category || 'work'}`);
+            catBadge.textContent = catNames[task.category] || 'Работа';
+            badgesDiv.appendChild(catBadge);
+
+            // Приоритет
+            const prioBadge = document.createElement('span');
+            const prioNames = { high: 'Высокий', medium: 'Средний', low: 'Низкий' };
+            prioBadge.classList.add('badge', `badge--${task.priority || 'medium'}`);
+            prioBadge.textContent = prioNames[task.priority] || 'Средний';
+            badgesDiv.appendChild(prioBadge);
+
+            contentDiv.appendChild(badgesDiv);
+
+            // Дедлайн
+            if (task.deadline) {
+                const deadlineSpan = document.createElement('span');
+                deadlineSpan.classList.add('task-deadline');
+                
+                // Проверка на просрочку
+                const today = new Date().toISOString().split('T')[0];
+                if (task.deadline < today && !task.completed) {
+                    deadlineSpan.classList.add('overdue');
+                }
+                
+                deadlineSpan.textContent = `⏳ ${formatDate(task.deadline)}`;
+                contentDiv.appendChild(deadlineSpan);
             }
 
-            contentDiv.appendChild(span);
-            contentDiv.appendChild(dateSpan);
-
+            // Кнопка удаления
             const deleteBtn = document.createElement('button');
             deleteBtn.textContent = '✕';
             deleteBtn.classList.add('delete-btn');
@@ -72,13 +117,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = taskInput.value.trim();
         if (text === '') return;
 
+        // Собираем все данные из формы
         tasks.push({
             id: Date.now(),
-            text,
+            text: text,
             completed: false,
-            date: new Date().toISOString()
+            date: new Date().toISOString(),
+            deadline: taskDeadline.value || null, // Если дата не выбрана, будет null
+            priority: taskPriority.value,
+            category: taskCategory.value
         });
+        
+        // Очищаем поля после добавления
         taskInput.value = '';
+        taskDeadline.value = ''; 
+        
         saveAndRender();
     }
 
@@ -121,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('theme', theme);
         
-        // Подсвечиваем активную кнопку темы
         themeButtons.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.themeValue === theme);
         });
@@ -131,7 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => applyTheme(btn.dataset.themeValue));
     });
 
-    // Восстанавливаем тему при загрузке (по умолчанию 'dark', так как у вас сейчас тёмная)
     const savedTheme = localStorage.getItem('theme') || 'dark';
     applyTheme(savedTheme);
     // --------------------------------
